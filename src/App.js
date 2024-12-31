@@ -4,7 +4,7 @@ import './App.css';
 function App() {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 50;
+  const usersPerPage = 48;
 
   useEffect(() => {
     fetch('https://randomuser.me/api/?results=5000')
@@ -16,24 +16,47 @@ function App() {
   const currentUsers = data.slice(indexOfLastUser - usersPerPage, indexOfLastUser);
   const totalPages = Math.ceil(data.length / usersPerPage);
 
+ 
+  const pageNumbers = [];
+  const maxPageRange = 2; 
+
+  for (let i = 1; i <= totalPages; i++) {
+    
+    if (i <= 2 || i > totalPages - 2 || (i >= currentPage - maxPageRange && i <= currentPage + maxPageRange)) {
+      pageNumbers.push(i);
+    } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+      pageNumbers.push('...');
+    }
+  }
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>Random Users</h1>
         {data.length > 0 ? (
           <>
-            <ul>
+            <div className="user-grid">
               {currentUsers.map(user => (
-                <li key={user.email}>
+                <div className="user-card" key={user.email}>
                   <img src={user.picture.medium} alt={user.name.first} />
-                  <div>{user.name.first} {user.name.last}</div>
-                </li>
+                  <div className="user-info">
+                    <h3>{user.name.first} {user.name.last}</h3>
+                    <p>{user.email}</p>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
             <div className="pagination">
               <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Prev</button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button key={i} onClick={() => setCurrentPage(i + 1)} className={currentPage === i + 1 ? 'active' : ''}>{i + 1}</button>
+              {pageNumbers.map((number, index) => (
+                <button
+                  key={index}
+                  onClick={() => number !== '...' && setCurrentPage(number)}
+                  className={currentPage === number ? 'active' : ''}
+                  disabled={number === '...'}
+                >
+                  {number}
+                </button>
               ))}
               <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>Next</button>
             </div>
